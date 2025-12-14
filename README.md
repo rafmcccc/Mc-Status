@@ -3,8 +3,9 @@
 > A Discord bot that displays real-time Minecraft server statistics with automatic updates and customizable status rotation.
 
 [![Bun](https://img.shields.io/badge/Bun-black?style=flat&logo=bun&logoColor=white)](https://bun.sh)
-[![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![JavaScript]( https://img.shields.io/badge/logo-javascript-blue?logo=javascript)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![NodeJS](https://img.shields.io/npm/v/npm.svg?logo=nodedotjs)](https://nodejs.org/en)
 
 ## Special Thanks
 
