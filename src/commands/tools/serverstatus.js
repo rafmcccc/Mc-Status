@@ -1,12 +1,14 @@
-const { SlashCommandBuilder, ButtonBuilder, EmbedBuilder, ActionRowBuilder, ButtonStyle, ComponentType, MessageFlags, PermissionFlagsBits, ChannelType } = require('discord.js');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags, PermissionFlagsBits, ChannelType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const config = require('../../config');
+const { fetchServerData, createStatsEmbed } = require('../../functions/statsUpdater');
 
-const ALLOWED_IP = 'monyxmc.net';
 const CONFIG_PATH = path.join(__dirname, '../../data/stats-channels.json');
 
-// Load config
+/**
+ * Load stats configuration
+ */
 function loadConfig() {
   try {
     if (!fs.existsSync(path.dirname(CONFIG_PATH))) {
@@ -21,66 +23,21 @@ function loadConfig() {
   return {};
 }
 
-// Save config
-function saveConfig(config) {
+/**
+ * Save stats configuration
+ */
+function saveConfig(cfg) {
   try {
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2));
   } catch (error) {
     console.error('Error saving stats config:', error);
   }
 }
 
-// Function to calculate real-time ping
-async function getPing(ip) {
-  const startTime = Date.now();
-  try {
-    await fetch(`https://mcapi.us/server/status?ip=${ip}`);
-    return Date.now() - startTime;
-  } catch (error) {
-    return 'N/A';
-  }
-}
-
-// Create stats embed
-async function createStatsEmbed(ip) {
-  const startTime = Date.now();
-  const getData = await fetch(`https://mcapi.us/server/status?ip=${ip}`);
-  const ping = Date.now() - startTime;
-  const response = await getData.json();
-
-  if (response.status === "error" || response.online === false) {
-    return {
-      embed: new EmbedBuilder()
-        .setColor("#FF6B6B")
-        .setDescription(`❌ **Server is currently offline**\n\n🌐 **IP:** ${ip}`),
-      isOnline: false
-    };
-  }
-
-  const playersOnline = response.players?.now || response.players?.online || 0;
-  const playersMax = response.players?.max || 0;
-  
-  return {
-    embed: new EmbedBuilder()
-      .setColor("#b6cdff")
-      .setTitle('📊 MonyxMC Server Stats')
-      .addFields(
-      { name: '🟢 Status', value: 'Online', inline: true },
-      { name: '👥 Players', value: `${playersOnline}/${playersMax}`, inline: true },
-      { name: '⏱️ Ping', value: `${ping}ms`, inline: true },
-      { name: '🎮 Bedrock IP', value: `\`mc.monyxmc.net\``, inline: true },
-      { name: '🌐 Server IP', value: `\`${ip}\``, inline: false }
-      )
-      .setFooter({ text: 'Last updated' })
-      .setTimestamp(),
-    isOnline: true
-  };
-}
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("status")
-    .setDescription("Manage MonyxMC Server Stats display")
+    .setDescription("Manage Server Stats display")
     .addSubcommand(subcommand =>
       subcommand
         .setName("setup")
@@ -108,54 +65,46 @@ module.exports = {
   async execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
     
+    // SETUP SUBCOMMAND
     if (subcommand === 'setup') {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       
       const channel = interaction.options.getChannel("channel");
-      const config = loadConfig();
+      const cfg = loadConfig();
       
       // Check if already setup
-      if (config[interaction.guild.id]) {
+      if (cfg[interaction.guild.id]) {
         return interaction.editReply({
-          content: "⚠️ Server stats are already setup! Use `/stats remove` first to reset."
+          content: "⚠️ Server stats are already setup! Use `/status remove` first to reset."
         });
       }
       
       try {
-        const ip = ALLOWED_IP;
+        const ip = config.SERVER_IP;
         
-        // Create initial stats embed
-        const { embed, isOnline } = await createStatsEmbed(ip);
+        // Fetch server data and create initial embed
+        const serverData = await fetchServerData(ip);
+        const embed = await createStatsEmbed(ip, serverData);
         
-        const row = new ActionRowBuilder()
-          .addComponents(
-            new ButtonBuilder()
-              .setLabel('Refresh')
-              .setStyle(ButtonStyle.Primary)
-              .setCustomId('refreshStats')
-              .setEmoji('🔄')
-          );
-        
-        // Send the stats message to the chosen channel
+        // Send the stats message (no buttons/components)
         const message = await channel.send({ 
-          embeds: [embed], 
-          components: [row]
+          embeds: [embed]
         });
         
         // Save config
-        config[interaction.guild.id] = {
+        cfg[interaction.guild.id] = {
           channelId: channel.id,
           messageId: message.id
         };
-        saveConfig(config);
+        saveConfig(cfg);
         
         const successEmbed = new EmbedBuilder()
           .setColor("#4CAF50")
           .setTitle("✅ Server Stats Setup Complete!")
-          .setDescription("Stats message has been sent and will be interactive.")
+          .setDescription(`Stats message will auto-update every ${config.STATS_UPDATE_INTERVAL / 1000} seconds.`)
           .addFields(
-            { name: "Channel", value: `<#${channel.id}>`, inline: true },
-            { name: "Server", value: ALLOWED_IP, inline: true }
+            { name: "📍 Channel", value: `<#${channel.id}>`, inline: true },
+            { name: "🌐 Server", value: config.SERVER_IP, inline: true }
           )
           .setTimestamp();
         
@@ -169,11 +118,12 @@ module.exports = {
       }
     }
     
+    // REMOVE SUBCOMMAND
     else if (subcommand === 'remove') {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       
-      const config = loadConfig();
-      const guildConfig = config[interaction.guild.id];
+      const cfg = loadConfig();
+      const guildConfig = cfg[interaction.guild.id];
       
       if (!guildConfig) {
         return interaction.editReply({
@@ -194,8 +144,8 @@ module.exports = {
         }
         
         // Remove from config
-        delete config[interaction.guild.id];
-        saveConfig(config);
+        delete cfg[interaction.guild.id];
+        saveConfig(cfg);
         
         const embed = new EmbedBuilder()
           .setColor("#FF6B6B")
@@ -213,63 +163,20 @@ module.exports = {
       }
     }
     
+    // VIEW SUBCOMMAND
     else if (subcommand === 'view') {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       
-      const ip = ALLOWED_IP;
+      const ip = config.SERVER_IP;
       
       try {
-        const { embed, isOnline } = await createStatsEmbed(ip);
-        
-        const row = new ActionRowBuilder()
-          .addComponents(
-            new ButtonBuilder()
-              .setLabel('Refresh')
-              .setStyle(ButtonStyle.Primary)
-              .setCustomId('refreshStats_view')
-              .setEmoji('🔄')
-          );
+        const serverData = await fetchServerData(ip);
+        const embed = await createStatsEmbed(ip, serverData);
         
         await interaction.editReply({ 
-          embeds: [embed], 
-          components: [row]
+          embeds: [embed]
         });
         
-        const reply = await interaction.fetchReply();
-        
-        const collector = reply.createMessageComponentCollector({ 
-          componentType: ComponentType.Button, 
-          time: 300000 // 5 minutes
-        });
-        
-        collector.on('collect', async i => {
-          if (i.customId === 'refreshStats_view') {
-            const { embed: updatedEmbed } = await createStatsEmbed(ip);
-            
-            await i.update({
-              embeds: [updatedEmbed],
-              components: [row]
-            });
-          }
-        });
-
-        collector.on('end', async () => {
-          try {
-            const disabledRow = new ActionRowBuilder()
-              .addComponents(
-                new ButtonBuilder()
-                  .setLabel('Refresh')
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId('refreshStats_view')
-                  .setEmoji('🔄')
-                  .setDisabled(true)
-              );
-            
-            await interaction.editReply({ components: [disabledRow] });
-          } catch (error) {
-            // Ignore if message was deleted
-          }
-        });
       } catch (error) {
         console.error('Error viewing server stats:', error);
         await interaction.editReply({ 

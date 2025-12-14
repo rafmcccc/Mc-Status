@@ -2,10 +2,11 @@ const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
 const fs = require("fs");
 const path = require("path");
+const config = require("../../config");
 
 module.exports = (client) => {
   client.handleCommands = async () => {
-    const basePath = path.join(__dirname, "..", "..", "commands")
+    const basePath = path.join(__dirname, "..", "..", "commands");
     const commandFolders = fs.readdirSync(basePath);
 
     // Clear existing commands to prevent duplicates
@@ -51,7 +52,7 @@ module.exports = (client) => {
     console.log(`\n✅ Loaded ${client.commandArray.length} commands total`);
 
     const clientId = client.user.id;
-    const rest = new REST({ version: "9" }).setToken(process.env.DISCORD_TOKEN);
+    const rest = new REST({ version: "9" }).setToken(config.DISCORD_TOKEN);
 
     try {
       console.log("\n🔄 Registering commands to guilds...");
@@ -63,7 +64,7 @@ module.exports = (client) => {
       let successCount = 0;
       let failCount = 0;
 
-      // Register to each guild one by one with progress
+      // Register to each guild
       for (let i = 0; i < guilds.length; i++) {
         const guild = guilds[i];
         

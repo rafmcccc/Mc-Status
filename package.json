@@ -1,1 +1,35 @@
-{"main":"bot.js","scripts":{"start":"node bot.js"},"dependencies":{"@discord-player/extractor":"^7.1.0","@discordjs/rest":"^2.6.0","@huggingface/inference":"^4.11.2","axios":"^1.13.2","discord-api-types":"^0.38.30","discord-player":"^7.1.0","discord.js":"^14.23.2","dotenv":"^17.2.3","express":"^5.1.0","ffmpeg-static":"^5.2.0","giphy-api":"^2.0.2","nekosapi":"^0.7.0","node-fetch":"^3.3.2","seyfert":"^4.0.1-dev-20006088884.0","spotify-web-api-node":"^5.0.2"},"devDependencies":{"typescript":"^5.9.3"}}
+{
+  "name": "mc-status-bot",
+  "version": "1.0.0",
+  "description": "A Discord bot that displays real-time Minecraft server statistics",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "bun": "bun run src/index.js",
+    "bun:dev": "bun --watch src/index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "minecraft",
+    "server",
+    "status"
+  ],
+  "author": "rafmcccc",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/rest": "^2.6.0",
+    "discord-api-types": "^0.38.30",
+    "discord.js": "^14.23.2",
+    "dotenv": "^17.2.3",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.9.0",
+    "bun": ">=1.0.0"
+  }
+}
