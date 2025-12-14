@@ -1,6 +1,17 @@
 # Minecraft Server Status Discord Bot
 
-A Discord bot that displays real-time Minecraft server statistics with automatic updates and customizable status rotation.
+> A Discord bot that displays real-time Minecraft server statistics with automatic updates and customizable status rotation.
+
+[![Bun](https://img.shields.io/badge/Bun-black?style=flat&logo=bun&logoColor=white)](https://bun.sh)
+[![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Special Thanks
+
+- [Discord.js](https://discord.js.org/) - Discord API wrapper
+- [MC Status API](https://api.mcstatus.io/) - Minecraft server status API
+- [Bun](https://bun.sh/) - Fast JavaScript runtime
+- All contributors and users!
 
 ## Features
 
@@ -82,9 +93,9 @@ npm run dev
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `DISCORD_TOKEN` | Your Discord bot token | - | ✅ Yes |
-| `SERVER_IP` | Your Minecraft server IP | `play.example.com` | ❌ No |
-| `BEDROCK_IP` | Your Bedrock server IP | `bedrock.example.com` | ❌ No |
-| `SUB_SERVERS` | Sub-servers for status rotation | `One Block:⛏️,Survival:🌲` | ❌ No |
+| `SERVER_IP` | Your Minecraft server IP | `play.example.com` | ✅ Yes |
+| `BEDROCK_IP` | Your Bedrock server IP | `bedrock.example.com` | ✅ Yes |
+| `SUB_SERVERS` | Sub-servers for status rotation | `One Block:⛏️,Survival:🌲` | ✅ Yes |
 | `STATUS_UPDATE_INTERVAL` | Bot status update interval (ms) | `30000` | ❌ No |
 | `STATS_UPDATE_INTERVAL` | Stats embed update interval (ms) | `10000` | ❌ No |
 
