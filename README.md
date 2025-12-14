@@ -335,13 +335,6 @@ If you encounter any issues or have questions:
 - No refresh buttons needed
 - Bun runtime support
 
-## Acknowledgments
-
-- [Discord.js](https://discord.js.org/) - Discord API wrapper
-- [MC Status API](https://api.mcstatus.io/) - Minecraft server status API
-- [Bun](https://bun.sh/) - Fast JavaScript runtime
-- All contributors and users!
-
 Made with ❤️ for the Minecraft community
 
 **Star ⭐ this repository if you find it useful!**

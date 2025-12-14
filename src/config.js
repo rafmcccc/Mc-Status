@@ -1,10 +1,6 @@
 require('dotenv').config();
 
-/**
- * Parse sub-servers from environment variable
- * Format: name:emoji,name:emoji
- * Example: "One Block:⛏️,Survival:🌲"
- */
+//Parse sub-servers from environment variable
 function parseSubServers() {
   const defaultServers = [
     { name: 'One Block', emoji: '⛏️' },
@@ -43,9 +39,7 @@ function parseSubServers() {
   }
 }
 
-/**
- * Validate required environment variables
- */
+//Validate required environment variables
 function validateConfig() {
   if (!process.env.DISCORD_TOKEN) {
     throw new Error('❌ DISCORD_TOKEN is required in .env file');

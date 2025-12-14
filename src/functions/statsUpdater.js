@@ -8,11 +8,9 @@ const CONFIG_PATH = path.join(__dirname, '../data/stats-channels.json');
 
 let cachedConfig = {};
 let lastConfigLoad = 0;
-const CONFIG_CACHE_DURATION = 60000; // 1 minute
+const CONFIG_CACHE_DURATION = 60000; 
 
-/**
- * Load config with caching
- */
+//Load config with caching
 function loadConfig() {
   const now = Date.now();
   if (cachedConfig && Object.keys(cachedConfig).length > 0 && (now - lastConfigLoad) < CONFIG_CACHE_DURATION) {
@@ -31,9 +29,7 @@ function loadConfig() {
   return {};
 }
 
-/**
- * Create stats embed
- */
+// Create embed
 async function createStatsEmbed(ip, serverData) {
   if (!serverData || serverData.online !== true) {
     return new EmbedBuilder()
@@ -65,9 +61,7 @@ async function createStatsEmbed(ip, serverData) {
     .setTimestamp();
 }
 
-/**
- * Fetch server data with accurate ping
- */
+//Fetch server ping and status
 async function fetchServerData(ip) {
   try {
     const controller = new AbortController();
@@ -100,9 +94,7 @@ async function fetchServerData(ip) {
   }
 }
 
-/**
- * Update all stats messages
- */
+//Update all stats messages
 async function updateStatsMessages(client) {
   const cfg = loadConfig();
   if (Object.keys(cfg).length === 0) return;
@@ -136,23 +128,18 @@ async function updateStatsMessages(client) {
   await Promise.allSettled(updatePromises);
 }
 
-/**
- * Start the stats updater
- */
+//Start the stats updater
 function start(client) {
   console.log(`✅ Stats updater started (updates every ${config.STATS_UPDATE_INTERVAL / 1000}s)`);
 
-  // Initial update after 10 seconds
   setTimeout(() => {
     updateStatsMessages(client);
   }, 10000);
 
-  // Regular updates
   const interval = setInterval(() => {
     updateStatsMessages(client);
   }, config.STATS_UPDATE_INTERVAL);
 
-  // Cleanup function
   return () => {
     clearInterval(interval);
     console.log('🛑 Stats updater stopped');

@@ -9,11 +9,8 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    // GatewayIntentBits.MessageContent, // Not needed for slash commands
-    // GatewayIntentBits.GuildVoiceStates, // Not needed for status bot
-    // GatewayIntentBits.GuildMembers, // Requires privileged intent
-    // GatewayIntentBits.GuildPresences // Requires privileged intent
   ],
+  
   // Optimize caching - reduce memory usage
   sweepers: {
     messages: {

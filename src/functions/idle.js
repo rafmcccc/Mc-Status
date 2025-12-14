@@ -4,11 +4,9 @@ const config = require('../config');
 let currentServerIndex = 0;
 let cachedData = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 30000; // 30 seconds cache
+const CACHE_DURATION = 30000; 
 
-/**
- * Fetch server status with caching
- */
+//Fetch server status with caching
 async function fetchServerStatus() {
   const now = Date.now();
   
@@ -44,9 +42,7 @@ async function fetchServerStatus() {
   }
 }
 
-/**
- * Update bot presence/status
- */
+//Update bot presence/idle status
 async function updatePresence(client) {
   const data = await fetchServerStatus();
   
@@ -82,16 +78,12 @@ async function updatePresence(client) {
   currentServerIndex = (currentServerIndex + 1) % config.SUB_SERVERS.length;
 }
 
-/**
- * Start the status updater
- */
+//Start the status updater
 function start(client) {
   let updateInterval;
 
-  // Initial update
   updatePresence(client);
 
-  // Set up interval
   updateInterval = setInterval(() => {
     updatePresence(client);
   }, config.STATUS_UPDATE_INTERVAL);
