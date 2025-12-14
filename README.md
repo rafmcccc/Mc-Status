@@ -36,12 +36,7 @@ cd mc-status-bot
 bun install
 ```
 
-3. **Configure environment variables:**
-```bash
-cp .env.example .env
-```
-
-4. **Edit `.env` file with your configuration:**
+3. **Edit `.env` file with your configuration:**
 ```env
 DISCORD_TOKEN=your_discord_bot_token_here
 SERVER_IP=play.yourserver.com
@@ -51,7 +46,7 @@ STATUS_UPDATE_INTERVAL=30000
 STATS_UPDATE_INTERVAL=10000
 ```
 
-5. **Start the bot:**
+4. **Start the bot:**
 ```bash
 bun run bun
 # or for development with auto-reload
@@ -71,14 +66,9 @@ cd mc-status-bot
 npm install
 ```
 
-3. **Configure environment variables:**
-```bash
-cp .env.example .env
-```
+3. **Edit `.env` file (same as above)**
 
-4. **Edit `.env` file (same as above)**
-
-5. **Start the bot:**
+4. **Start the bot:**
 ```bash
 npm start
 # or for development
