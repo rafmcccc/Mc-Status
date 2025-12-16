@@ -57,14 +57,12 @@ module.exports = (client) => {
     try {
       console.log("\n🔄 Registering commands to guilds...");
 
-      // Get all guilds
       const guilds = Array.from(client.guilds.cache.values());
       console.log(`Found ${guilds.length} guild(s)`);
 
       let successCount = 0;
       let failCount = 0;
 
-      // Register to each guild
       for (let i = 0; i < guilds.length; i++) {
         const guild = guilds[i];
         

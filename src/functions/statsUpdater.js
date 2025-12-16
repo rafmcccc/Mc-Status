@@ -8,7 +8,8 @@ const CONFIG_PATH = path.join(__dirname, '../data/stats-channels.json');
 
 let cachedConfig = {};
 let lastConfigLoad = 0;
-const CONFIG_CACHE_DURATION = 60000; 
+const CONFIG_CACHE_DURATION = 60000;
+let serverOfflineStatus = new Map();
 
 //Load config with caching
 function loadConfig() {
@@ -29,13 +30,63 @@ function loadConfig() {
   return {};
 }
 
-// Create embed
-async function createStatsEmbed(ip, serverData) {
+//Check if server data indicates offline status (0/0 players)
+function isServerDataOffline(serverData) {
+  if (!config.AUTO_OFFLINE_ON_ZERO_PLAYERS) {
+    return false;
+  }
+  
   if (!serverData || serverData.online !== true) {
+    return true;
+  }
+  
+  const playersOnline = serverData.players?.online || 0;
+  const playersMax = serverData.players?.max || 0;
+  
+  return playersOnline === 0 && playersMax === 0;
+}
+
+function updateOfflineStatus(guildId, isOffline) {
+  if (!serverOfflineStatus.has(guildId)) {
+    serverOfflineStatus.set(guildId, { count: 0, isOffline: false });
+  }
+  
+  const status = serverOfflineStatus.get(guildId);
+  
+  if (isOffline) {
+    status.count++;
+    // Mark as offline after 2 consecutive 0/0 readings
+    if (status.count >= 2 && !status.isOffline) {
+      status.isOffline = true;
+      console.log(`⚠️ Server marked as offline for guild ${guildId} (0/0 players detected)`);
+    }
+  } else {
+    if (status.isOffline) {
+      console.log(`✅ Server back online for guild ${guildId}`);
+    }
+    status.count = 0;
+    status.isOffline = false;
+  }
+  
+  return status.isOffline;
+}
+
+// Create embed
+async function createStatsEmbed(ip, serverData, guildId = null) {
+  const isDataOffline = isServerDataOffline(serverData);
+  
+  let isOffline = isDataOffline;
+  if (guildId) {
+    isOffline = updateOfflineStatus(guildId, isDataOffline);
+  }
+  
+  if (!serverData || serverData.online !== true || isOffline) {
+    const offlineReason = isDataOffline ? ' (0/0 Players - Server appears offline)' : '';
+    
     return new EmbedBuilder()
       .setColor("#FF6B6B")
       .setDescription(
-        `❌ **Server is currently offline**\n\n🌐 **Java IP:** \`${ip}\`\n🎮 **Bedrock IP:** \`${config.BEDROCK_IP}\``
+        `❌ **Server is currently offline**${offlineReason}\n\n🌐 **Java IP:** \`${ip}\`\n🎮 **Bedrock IP:** \`${config.BEDROCK_IP}\``
       )
       .setFooter({ text: 'Last updated' })
       .setTimestamp();
@@ -112,7 +163,7 @@ async function updateStatsMessages(client) {
       const message = await channel.messages.fetch(guildConfig.messageId, { force: true }).catch(() => null);
       if (!message) return;
 
-      const embed = await createStatsEmbed(config.SERVER_IP, serverData);
+      const embed = await createStatsEmbed(config.SERVER_IP, serverData, guildId);
 
       await message.edit({
         embeds: [embed]
@@ -131,6 +182,10 @@ async function updateStatsMessages(client) {
 //Start the stats updater
 function start(client) {
   console.log(`✅ Stats updater started (updates every ${config.STATS_UPDATE_INTERVAL / 1000}s)`);
+  
+  if (config.AUTO_OFFLINE_ON_ZERO_PLAYERS) {
+    console.log('✅ Auto-offline detection enabled for stats embeds (threshold: 2 consecutive 0/0 readings)');
+  }
 
   setTimeout(() => {
     updateStatsMessages(client);
@@ -142,6 +197,7 @@ function start(client) {
 
   return () => {
     clearInterval(interval);
+    serverOfflineStatus.clear();
     console.log('🛑 Stats updater stopped');
   };
 }

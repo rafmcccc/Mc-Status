@@ -11,21 +11,20 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
   ],
   
-  // Optimize caching - reduce memory usage
+  // Optimize caching 
   sweepers: {
     messages: {
-      interval: 300, // Sweep every 5 minutes
-      lifetime: 180  // Delete messages older than 3 minutes
+      interval: 300, 
+      lifetime: 180  
     },
     users: {
-      interval: 3600, // Sweep every hour
+      interval: 3600, 
       filter: () => user => user.bot && user.id !== client.user.id
     }
   },
-  // Reduce cache sizes
   makeCache: require('discord.js').Options.cacheWithLimits({
-    MessageManager: 50, // Keep last 50 messages per channel
-    PresenceManager: 0, // Don't cache presences
+    MessageManager: 50, 
+    PresenceManager: 0, 
   })
 });
 
@@ -34,7 +33,7 @@ client.buttons = new Collection();
 client.selectMenus = new Collection();
 client.commandArray = [];
 
-// Load handler functions
+// Load handler 
 const handlersPath = path.join(__dirname, "functions", "handlers");
 if (fs.existsSync(handlersPath)) {
   fs.readdirSync(handlersPath)
@@ -47,20 +46,18 @@ if (fs.existsSync(handlersPath)) {
 
 console.log("🔐 Logging in...");
 
-// Ready event
+// Ready
 client.once("ready", async () => {
   console.log(`\n✅ Logged in as ${client.user.tag}`);
   console.log(`🌐 Bot is in ${client.guilds.cache.size} guild(s)`);
   console.log(`📊 Configured server: ${config.SERVER_IP}`);
   console.log(`🎮 Bedrock server: ${config.BEDROCK_IP}\n`);
 
-  // Load events
   if (client.handleEvents) {
     console.log("📡 Loading events...");
     await client.handleEvents();
   }
 
-  // Load components
   if (client.handleComponents) {
     console.log("🔘 Loading components...");
     await client.handleComponents();
@@ -77,7 +74,6 @@ client.once("ready", async () => {
     }
   }
 
-  // Start background services
   console.log("🚀 Starting background services...");
   statsUpdater.start(client);
   idle.start(client);
@@ -85,7 +81,6 @@ client.once("ready", async () => {
   console.log("\n🎉 Bot is fully operational!\n");
 });
 
-// Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n🛑 Shutting down gracefully...');
   client.destroy();
